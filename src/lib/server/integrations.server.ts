@@ -29,10 +29,10 @@ const BCL = "https://api.bcl.my/v1";
 const UA = "TeacherShaSpeakingClub/1.0";
 
 export function bclConfigured() {
-  return !!process.env.BCL_API_TOKEN && !!process.env.BCL_PORTAL_KEY;
+  return !!process.env['BCL_API_TOKEN'] && !!process.env['BCL_PORTAL_KEY'];
 }
 export function bclTestMode() {
-  return (process.env.BCL_TEST_MODE ?? "true").toLowerCase() !== "false";
+  return (process.env['BCL_TEST_MODE'] ?? "true").toLowerCase() !== "false";
 }
 
 export async function bclCreatePaymentLink(p: {
