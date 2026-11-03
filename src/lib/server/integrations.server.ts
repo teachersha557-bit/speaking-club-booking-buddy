@@ -166,9 +166,8 @@ export function meetFrom(ev: any): string | null {
 const b64 = (s: string) => btoa(Array.from(new TextEncoder().encode(s), (b) => String.fromCharCode(b)).join(""));
 const hdr = (v: string) => (/^[\x00-\x7F]*$/.test(v) ? v : `=?UTF-8?B?${b64(v)}?=`);
 
-export async function gmailSend(to: string, subject: string, html: string, fromName: string) {
+export async function gmailSend(to: string, subject: string, html: string) {
   const raw = [
-    `From: ${hdr(fromName)} <me>`,
     `To: ${to}`,
     `Subject: ${hdr(subject)}`,
     "MIME-Version: 1.0",
