@@ -202,14 +202,13 @@ export async function runClassReminders(now = new Date()) {
   return { sent };
 }
 
-/** After the final class: one renewal reminder for eligible continuing students. */
+/** Final-class Tuesday 6 PM (before the 8 PM class): one renewal reminder for eligible continuing students. */
 export async function runRenewalReminders(now = new Date()) {
   const sb = await db();
   const p = mytParts(now);
-  // packages whose final class (start + 21) was within the last 7 days
-  const from = addDays(p.date, -28), to = addDays(p.date, -21);
+  // packages whose final class (start + 21) is today: reminder goes out that Tuesday 6 PM
   const { data: pkgs } = await sb.from("bookings").select("id, start_date, status, payment_status, student_id, students(*)")
-    .eq("status", "confirmed").gte("start_date", from).lte("start_date", to);
+    .eq("status", "confirmed").eq("start_date", addDays(p.date, -21));
   let sent = 0;
   for (const pkg of pkgs ?? []) {
     const s: any = (pkg as any).students;
