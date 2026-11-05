@@ -74,8 +74,7 @@ export interface PackageLite {
 
 /**
  * Renewal reminder eligibility for one package.
- * - reminder goes out on the final-class Tuesday, 6 PM MYT, before the 8 PM
- *   class — never at night and never the next day
+  * - reminder goes out Wednesday at 10 AM MYT after the final Tuesday class
  * - no later paid package exists (not renewed)
  * - continuity: if there was a previous package, the gap between it and this one < 1 month
  */
@@ -87,9 +86,10 @@ export function renewalEligibility(
 ): { eligible: boolean; reason: string } {
   const last = addDays(pkg.start_date, 21); // final class date
   const p = mytParts(now);
-  if (p.date !== last) return { eligible: false, reason: "not the final class Tuesday" };
-  if (p.hour < 18) return { eligible: false, reason: "before 6 PM" };
-  if (p.hour >= 20) return { eligible: false, reason: "class has started" };
+  if (p.date !== addDays(last, 1)) return { eligible: false, reason: "not the Wednesday after final class" };
+  if (p.hour < 10) return { eligible: false, reason: "before 10 AM" };
+  if (p.hour >= 11) return { eligible: false, reason: "Wednesday morning window missed" };
+  if (pkg.status !== "confirmed" || pkg.payment_status !== "paid") return { eligible: false, reason: "not confirmed and paid" };
   if (!student.active) return { eligible: false, reason: "inactive" };
   if (!student.whatsapp_consent || !student.whatsapp) return { eligible: false, reason: "no consent" };
   const paid = allPaid.filter((p) => p.payment_status === "paid");

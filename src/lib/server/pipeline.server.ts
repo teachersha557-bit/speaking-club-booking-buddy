@@ -202,13 +202,14 @@ export async function runClassReminders(now = new Date()) {
   return { sent };
 }
 
-/** Final-class Tuesday 6 PM (before the 8 PM class): one renewal reminder for eligible continuing students. */
+/** Wednesday 10 AM after final class: one reminder for eligible continuing students. */
 export async function runRenewalReminders(now = new Date()) {
   const sb = await db();
   const p = mytParts(now);
-  // packages whose final class (start + 21) is today: reminder goes out that Tuesday 6 PM
+  if (p.dow !== 3 || p.hour !== 10) return { skipped: "outside Wednesday 10 AM MYT" };
+  // The final class was yesterday, start + 21; today is start + 22.
   const { data: pkgs } = await sb.from("bookings").select("id, start_date, status, payment_status, student_id, students(*)")
-    .eq("status", "confirmed").eq("start_date", addDays(p.date, -21));
+    .eq("status", "confirmed").eq("payment_status", "paid").eq("start_date", addDays(p.date, -22));
   let sent = 0;
   for (const pkg of pkgs ?? []) {
     const s: any = (pkg as any).students;
@@ -221,7 +222,7 @@ export async function runRenewalReminders(now = new Date()) {
     }
     const ok = await sendOnce({
       type: "renewal", booking_id: pkg.id, student_id: s.id, class_date: addDays(pkg.start_date, 21), whatsapp_number: s.whatsapp,
-      scheduled_for: now.toISOString(),
+      scheduled_for: `${p.date}T10:00:00+08:00`,
     }, () => waSendTemplate(s.whatsapp, TEMPLATE_RENEWAL, [s.name, `${SITE_URL}/#daftar`]));
     if (ok) sent++;
   }
