@@ -28,32 +28,32 @@ describe("schedule rules", () => {
 describe("renewal eligibility", () => {
   // package starting 10 Nov 2026 has its final class on Tue 1 Dec 2026
   const pkg = paid("2026-11-10");
-  const finalTuesday = "2026-12-01";
-  const at6pm = at("2026-12-01T10:00:00Z"); // Tue 6 PM MYT, before the 8 PM class
+  const at10am = at("2026-12-02T02:00:00Z"); // Wednesday 10 AM MYT
 
-  it("eligible on the final-class Tuesday at 6 PM", () => {
-    expect(renewalEligibility(pkg, [paid("2026-10-13"), pkg], at6pm, student).eligible).toBe(true);
+  it("eligible Wednesday at 10 AM after final Tuesday class", () => {
+    expect(renewalEligibility(pkg, [paid("2026-10-13"), pkg], at10am, student).eligible).toBe(true);
   });
-  it("too early before 6 PM on the final-class Tuesday", () => {
-    expect(renewalEligibility(pkg, [pkg], at("2026-12-01T09:59:00Z"), student).reason).toBe("before 6 PM");
+  it("too early before Wednesday 10 AM", () => {
+    expect(renewalEligibility(pkg, [pkg], at("2026-12-02T01:59:00Z"), student).reason).toBe("before 10 AM");
   });
   it("never at night after the class", () => {
     expect(renewalEligibility(pkg, [pkg], at("2026-12-01T12:30:00Z"), student).eligible).toBe(false);
   });
-  it("never the next day (Wednesday 10 AM after the final class)", () => {
-    expect(renewalEligibility(pkg, [pkg], at("2026-12-02T02:00:00Z"), student).reason).toBe("not the final class Tuesday");
+  it("does not revive a missed Wednesday morning reminder", () => {
+    expect(renewalEligibility(pkg, [pkg], at("2026-12-02T03:00:00Z"), student).eligible).toBe(false);
+    expect(renewalEligibility(pkg, [pkg], at("2026-12-09T02:00:00Z"), student).eligible).toBe(false);
   });
   it("renewed student gets nothing", () => {
-    expect(renewalEligibility(pkg, [pkg, paid("2026-12-08")], at6pm, student).reason).toBe("renewed");
+    expect(renewalEligibility(pkg, [pkg, paid("2026-12-08")], at10am, student).reason).toBe("renewed");
   });
   it("gap of one month or more gets nothing", () => {
     // previous package ended 22 Sep, next started 10 Nov: 49 days - 7 = 42 day gap
-    expect(renewalEligibility(pkg, [paid("2026-09-01"), pkg], at6pm, student).eligible).toBe(false);
+    expect(renewalEligibility(pkg, [paid("2026-09-01"), pkg], at10am, student).eligible).toBe(false);
   });
   it("inactive student gets nothing", () => {
-    expect(renewalEligibility(pkg, [pkg], at6pm, { ...student, active: false }).reason).toBe("inactive");
+    expect(renewalEligibility(pkg, [pkg], at10am, { ...student, active: false }).reason).toBe("inactive");
   });
   it("opted-out students get nothing", () => {
-    expect(renewalEligibility(pkg, [pkg], at6pm, { ...student, whatsapp_consent: false }).reason).toBe("no consent");
+    expect(renewalEligibility(pkg, [pkg], at10am, { ...student, whatsapp_consent: false }).reason).toBe("no consent");
   });
 });

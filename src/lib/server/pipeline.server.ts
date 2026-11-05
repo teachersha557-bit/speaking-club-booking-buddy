@@ -20,7 +20,8 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e)).slic
 /** Check BCL for a booking's payment. Returns the new booking status. */
 export async function verifyBookingPayment(reference: string, source: string): Promise<string> {
   const sb = await db();
-  const { data: b } = await sb.from("bookings").select("*, students(*)").eq("reference", reference).maybeSingle();
+  const { data: b, error: bookingError } = await sb.from("bookings").select("*, students(*)").eq("reference", reference).maybeSingle();
+  if (bookingError) throw bookingError;
   if (!b) {
     await sb.from("webhook_logs").insert({ source, event_type: "verify", booking_reference: reference, order_number: reference, status: "unmatched", error: "No booking with this reference" });
     return "unmatched";
@@ -35,18 +36,19 @@ export async function verifyBookingPayment(reference: string, source: string): P
   if (t.orderNumber !== reference) problems.push("order number mismatch");
   if (!t.isPaid || t.status !== 3) problems.push(`not paid (${t.statusDescription ?? t.status})`);
   if ((t.currency ?? "").toUpperCase() !== "MYR") problems.push(`currency ${t.currency}`);
-  if (!(Number(t.subtotal) >= PRICE_MYR - 0.001)) problems.push(`amount ${t.subtotal}`);
+  if (!Number.isFinite(t.subtotal) || Math.round(Number(t.subtotal) * 100) !== Math.round(Number(b.price) * 100)) problems.push(`amount ${t.subtotal}`);
   const student = (b as any).students;
-  if (t.payerEmail && student?.email && t.payerEmail.toLowerCase() !== student.email.toLowerCase())
+  if (!t.payerEmail || !student?.email || t.payerEmail.toLowerCase() !== student.email.toLowerCase())
     problems.push("payer email differs");
-  const verified = problems.length === 0 || (problems.length === 1 && problems[0] === "payer email differs");
+  const verified = problems.length === 0;
 
-  await sb.from("payments").upsert({
+  const { error: paymentError } = await sb.from("payments").upsert({
     order_number: reference, booking_reference: reference, amount: t.amount, subtotal: t.subtotal,
     currency: t.currency, status: t.statusDescription ?? String(t.status), is_paid: t.isPaid,
     verification_result: problems.length ? problems.join("; ") : "verified",
     verified_at: new Date().toISOString(), audit: t.raw as any,
   }, { onConflict: "order_number" });
+  if (paymentError) throw paymentError;
 
   if (!t.isPaid) {
     if (t.status === 2) await sb.from("bookings").update({ payment_status: "failed" }).eq("id", b.id).neq("status", "confirmed");
@@ -202,13 +204,14 @@ export async function runClassReminders(now = new Date()) {
   return { sent };
 }
 
-/** Final-class Tuesday 6 PM (before the 8 PM class): one renewal reminder for eligible continuing students. */
+/** Wednesday 10 AM after final class: one reminder for eligible continuing students. */
 export async function runRenewalReminders(now = new Date()) {
   const sb = await db();
   const p = mytParts(now);
-  // packages whose final class (start + 21) is today: reminder goes out that Tuesday 6 PM
+  if (p.dow !== 3 || p.hour !== 10) return { skipped: "outside Wednesday 10 AM MYT" };
+  // The final class was yesterday, start + 21; today is start + 22.
   const { data: pkgs } = await sb.from("bookings").select("id, start_date, status, payment_status, student_id, students(*)")
-    .eq("status", "confirmed").eq("start_date", addDays(p.date, -21));
+    .eq("status", "confirmed").eq("payment_status", "paid").eq("start_date", addDays(p.date, -22));
   let sent = 0;
   for (const pkg of pkgs ?? []) {
     const s: any = (pkg as any).students;
@@ -221,7 +224,7 @@ export async function runRenewalReminders(now = new Date()) {
     }
     const ok = await sendOnce({
       type: "renewal", booking_id: pkg.id, student_id: s.id, class_date: addDays(pkg.start_date, 21), whatsapp_number: s.whatsapp,
-      scheduled_for: now.toISOString(),
+      scheduled_for: `${p.date}T10:00:00+08:00`,
     }, () => waSendTemplate(s.whatsapp, TEMPLATE_RENEWAL, [s.name, `${SITE_URL}/#daftar`]));
     if (ok) sent++;
   }
@@ -258,13 +261,16 @@ export async function sendOnce(
 /** Every-10-minutes housekeeping: expire holds, poll BCL for pending payments, retry fulfilment. */
 export async function runTick() {
   const sb = await db();
-  const { data: expired } = await sb.rpc("expire_holds");
+  if (!bclConfigured()) throw new Error("BCL payment verification is not configured");
+  const { data: expired, error: expiryError } = await sb.rpc("expire_holds");
+  if (expiryError) throw expiryError;
   const since = new Date(Date.now() - 3 * 864e5).toISOString();
-  const { data: pending } = await sb.from("bookings").select("reference").in("status", ["held", "expired"])
-    .neq("payment_status", "paid").gte("created_at", since).limit(40);
+  const { data: pending, error: pendingError } = await sb.from("bookings").select("reference").in("status", ["held", "expired"])
+    .neq("payment_status", "paid").gte("created_at", since).order("created_at", { ascending: false }).limit(40);
+  if (pendingError) throw pendingError;
   let checked = 0;
   for (const b of pending ?? []) {
-    try { await verifyBookingPayment(b.reference, "poll"); checked++; } catch (e) { console.error("poll", b.reference, errMsg(e)); }
+    await verifyBookingPayment(b.reference, "poll"); checked++;
   }
   const { data: retry } = await sb.from("bookings").select("id").eq("status", "confirmed").neq("calendar_status", "done").limit(20);
   for (const b of retry ?? []) { try { await fulfil(b.id); } catch (e) { console.error("fulfil", errMsg(e)); } }

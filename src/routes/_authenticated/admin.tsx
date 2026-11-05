@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
       { name: "description", content: "Classes, bookings, payments and messages." },
       { property: "og:title", content: "Bookings dashboard — Teacher Sha" },
       { property: "og:description", content: "Classes, bookings, payments and messages." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminPage,
@@ -28,8 +30,11 @@ function AdminPage() {
   const role = useQuery({
     queryKey: ["is-admin"],
     queryFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      const { data } = await supabase.rpc("has_role", { _user_id: u.user!.id, _role: "admin" });
+      const { data: u, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!u.user) return { admin: false, email: undefined };
+      const { data, error } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+      if (error) throw error;
       return { admin: !!data, email: u.user?.email };
     },
   });
@@ -64,6 +69,7 @@ function AdminPage() {
   }
 
   if (role.isLoading) return <p className="p-8 text-muted-foreground">Loading…</p>;
+  if (role.isError) return <main className="p-8"><p className="text-destructive">Could not check your access.</p><Button className="mt-4" onClick={() => role.refetch()}>Try again</Button></main>;
   if (!admin) return (
     <main className="p-8">
       <p className="text-foreground">{role.data?.email} is not an admin account.</p>
@@ -80,6 +86,7 @@ function AdminPage() {
         </div>
         <Button variant="outline" onClick={signOut}>Sign out</Button>
       </header>
+      {[classes, bookings, messages, emails].some((query) => query.isError) && <p role="alert" className="mb-4 text-destructive">Some records could not load. Please try again.</p>}
 
       <Tabs defaultValue="classes">
         <TabsList>

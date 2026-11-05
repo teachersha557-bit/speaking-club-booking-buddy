@@ -15,6 +15,13 @@
       "when": 1793786973658,
       "tag": "0001_admin_email_role",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793862993071,
+      "tag": "0002_correct_teacher_admin_email",
+      "breakpoints": true
     }
   ]
 }

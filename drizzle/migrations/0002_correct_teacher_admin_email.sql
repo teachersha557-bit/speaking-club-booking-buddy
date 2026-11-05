@@ -1,0 +1,1 @@
+CREATE OR REPLACE FUNCTION public.grant_admin_by_email() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ BEGIN IF lower(new.email) = 'teachersha557@gmail.com' AND new.email_confirmed_at IS NOT NULL THEN INSERT INTO public.user_roles(user_id, role) VALUES (new.id, 'admin') ON CONFLICT DO NOTHING; END IF; RETURN new; END $$;

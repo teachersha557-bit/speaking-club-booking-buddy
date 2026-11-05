@@ -8,6 +8,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Private admin area for Teacher Sha Speaking Club bookings." },
       { property: "og:title", content: "Teacher Sha Speaking Club — Admin" },
       { property: "og:description", content: "Private admin area for Teacher Sha Speaking Club bookings." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Index,
