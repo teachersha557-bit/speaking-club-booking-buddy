@@ -1,0 +1,24 @@
+# Netlify deployment for the Teacher Sha booking engine + admin dashboard.
+# This is a SEPARATE Netlify site from the public website
+# (teachershaspeaking.netlify.app). The public site stays as it is and calls
+# this site's /api/public/* endpoints. See DEPLOY-NETLIFY.md.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Build the TanStack Start server for Netlify Functions (default is Cloudflare).
+  NITRO_PRESET = "netlify"
+
+[functions]
+  directory = "netlify/functions"
+
+# Keep the admin area out of search engines.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

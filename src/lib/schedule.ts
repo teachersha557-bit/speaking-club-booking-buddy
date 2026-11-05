@@ -122,3 +122,26 @@ export function fmtMs(date: string) {
 export function fmtEn(date: string) {
   return `Tuesday, ${+date.slice(8, 10)} ${MEN[+date.slice(5, 7) - 1]} ${date.slice(0, 4)}`;
 }
+
+/** The instant the renewal reminder for a package would go out: Wednesday 10:00 MYT after the final class. */
+export function renewalSendTime(start: string): Date {
+  return new Date(Date.parse(addDays(start, 22) + "T10:00:00+08:00"));
+}
+
+/**
+ * Dashboard preview of renewal eligibility for a package, using the exact
+ * same rule as the sender (evaluated at the package's send time).
+ */
+export function renewalPreview(
+  pkg: PackageLite,
+  allPaid: PackageLite[],
+  student: { active: boolean; whatsapp_consent: boolean; whatsapp: string | null },
+) {
+  return renewalEligibility(pkg, allPaid, renewalSendTime(pkg.start_date), student);
+}
+
+/** A student is "current" if a paid package's final class is today/future or ended less than a month ago. */
+export function isCurrentStudent(paidStarts: string[], now: Date): boolean {
+  const today = mytParts(now).date;
+  return paidStarts.some((s) => daysBetween(addDays(s, 21), today) < RENEWAL_GAP_DAYS);
+}

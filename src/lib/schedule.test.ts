@@ -57,3 +57,18 @@ describe("renewal eligibility", () => {
     expect(renewalEligibility(pkg, [pkg], at10am, { ...student, whatsapp_consent: false }).reason).toBe("no consent");
   });
 });
+
+import { renewalPreview, renewalSendTime, isCurrentStudent } from "./schedule";
+describe("dashboard helpers", () => {
+  it("renewal send time is Wednesday 10 AM MYT after the final class", () => {
+    expect(renewalSendTime("2026-11-10").toISOString()).toBe("2026-12-02T02:00:00.000Z");
+  });
+  it("preview matches the sender rule", () => {
+    expect(renewalPreview(paid("2026-11-10"), [paid("2026-11-10")], student).eligible).toBe(true);
+    expect(renewalPreview(paid("2026-11-10"), [paid("2026-11-10"), paid("2026-12-08")], student).reason).toBe("renewed");
+  });
+  it("current student within a month of the last class", () => {
+    expect(isCurrentStudent(["2026-10-06"], at("2026-11-05T00:00:00Z"))).toBe(true); // final 27 Oct
+    expect(isCurrentStudent(["2026-09-01"], at("2026-11-05T00:00:00Z"))).toBe(false); // final 22 Sep
+  });
+});

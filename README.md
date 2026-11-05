@@ -1522,3 +1522,7 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Hosting on Netlify
+
+See [DEPLOY-NETLIFY.md](DEPLOY-NETLIFY.md) for the full setup (database, Netlify, Google, BCL, WhatsApp, connecting the public website, and the go-live test checklist).

@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_emails: {
+        Row: { email: string }
+        Insert: { email: string }
+        Update: { email?: string }
+        Relationships: []
+      }
       booking_classes: {
         Row: {
           attendee_added: boolean
@@ -52,6 +58,9 @@ export type Database = {
       }
       bookings: {
         Row: {
+          cancelled_at: string | null
+          last_checked_at: string | null
+          payment_mode: string
           calendar_error: string | null
           calendar_status: string
           confirmed_at: string | null
@@ -68,6 +77,9 @@ export type Database = {
           student_id: string
         }
         Insert: {
+          cancelled_at?: string | null
+          last_checked_at?: string | null
+          payment_mode?: string
           calendar_error?: string | null
           calendar_status?: string
           confirmed_at?: string | null
@@ -84,6 +96,9 @@ export type Database = {
           student_id: string
         }
         Update: {
+          cancelled_at?: string | null
+          last_checked_at?: string | null
+          payment_mode?: string
           calendar_error?: string | null
           calendar_status?: string
           confirmed_at?: string | null
@@ -111,6 +126,7 @@ export type Database = {
       }
       class_sessions: {
         Row: {
+          event_claimed_at: string | null
           calendar_event_id: string | null
           capacity: number
           class_date: string
@@ -124,6 +140,7 @@ export type Database = {
           timezone: string
         }
         Insert: {
+          event_claimed_at?: string | null
           calendar_event_id?: string | null
           capacity?: number
           class_date: string
@@ -137,6 +154,7 @@ export type Database = {
           timezone?: string
         }
         Update: {
+          event_claimed_at?: string | null
           calendar_event_id?: string | null
           capacity?: number
           class_date?: string
@@ -153,6 +171,8 @@ export type Database = {
       }
       email_logs: {
         Row: {
+          attempted_at: string | null
+          attempts: number
           booking_id: string | null
           created_at: string
           email_type: string
@@ -163,6 +183,8 @@ export type Database = {
           status: string
         }
         Insert: {
+          attempted_at?: string | null
+          attempts?: number
           booking_id?: string | null
           created_at?: string
           email_type: string
@@ -173,6 +195,8 @@ export type Database = {
           status?: string
         }
         Update: {
+          attempted_at?: string | null
+          attempts?: number
           booking_id?: string | null
           created_at?: string
           email_type?: string
@@ -257,6 +281,7 @@ export type Database = {
       }
       payments: {
         Row: {
+          booking_id: string | null
           amount: number | null
           audit: Json | null
           booking_reference: string | null
@@ -273,6 +298,7 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
+          booking_id?: string | null
           amount?: number | null
           audit?: Json | null
           booking_reference?: string | null
@@ -289,6 +315,7 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          booking_id?: string | null
           amount?: number | null
           audit?: Json | null
           booking_reference?: string | null
@@ -356,6 +383,7 @@ export type Database = {
       }
       webhook_logs: {
         Row: {
+          dedupe_key: string | null
           booking_reference: string | null
           created_at: string
           error: string | null
@@ -367,6 +395,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          dedupe_key?: string | null
           booking_reference?: string | null
           created_at?: string
           error?: string | null
@@ -378,6 +407,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          dedupe_key?: string | null
           booking_reference?: string | null
           created_at?: string
           error?: string | null
@@ -428,6 +458,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      class_availability: {
+        Args: { _from: string; _weeks?: number }
+        Returns: { capacity: number; class_date: string; taken: number }[]
+      }
       confirm_booking: { Args: { _bid: string }; Returns: string }
       create_booking: {
         Args: {

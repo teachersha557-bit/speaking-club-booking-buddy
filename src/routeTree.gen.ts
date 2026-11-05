@@ -13,7 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicAvailabilityRouteImport } from './routes/api/public/availability'
+import { Route as ApiPublicBclWebhookRouteImport } from './routes/api/public/bcl/webhook'
+import { Route as ApiPublicBookingsIndexRouteImport } from './routes/api/public/bookings/index'
+import { Route as ApiPublicBookingsReferenceRouteImport } from './routes/api/public/bookings/$reference'
 import { Route as ApiPublicJobsAutomationRouteImport } from './routes/api/public/jobs/automation'
+import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,23 +39,60 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicAvailabilityRoute = ApiPublicAvailabilityRouteImport.update({
+  id: '/api/public/availability',
+  path: '/api/public/availability',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBclWebhookRoute = ApiPublicBclWebhookRouteImport.update({
+  id: '/api/public/bcl/webhook',
+  path: '/api/public/bcl/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBookingsIndexRoute = ApiPublicBookingsIndexRouteImport.update({
+  id: '/api/public/bookings/',
+  path: '/api/public/bookings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBookingsReferenceRoute =
+  ApiPublicBookingsReferenceRouteImport.update({
+    id: '/api/public/bookings/$reference',
+    path: '/api/public/bookings/$reference',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicJobsAutomationRoute = ApiPublicJobsAutomationRouteImport.update({
   id: '/api/public/jobs/automation',
   path: '/api/public/jobs/automation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWhatsappWebhookRoute =
+  ApiPublicWhatsappWebhookRouteImport.update({
+    id: '/api/public/whatsapp/webhook',
+    path: '/api/public/whatsapp/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/api/public/availability': typeof ApiPublicAvailabilityRoute
+  '/api/public/bcl/webhook': typeof ApiPublicBclWebhookRoute
+  '/api/public/bookings/$reference': typeof ApiPublicBookingsReferenceRoute
   '/api/public/jobs/automation': typeof ApiPublicJobsAutomationRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/public/bookings/': typeof ApiPublicBookingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/api/public/availability': typeof ApiPublicAvailabilityRoute
+  '/api/public/bcl/webhook': typeof ApiPublicBclWebhookRoute
+  '/api/public/bookings/$reference': typeof ApiPublicBookingsReferenceRoute
   '/api/public/jobs/automation': typeof ApiPublicJobsAutomationRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/public/bookings': typeof ApiPublicBookingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,27 +100,60 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/api/public/availability': typeof ApiPublicAvailabilityRoute
+  '/api/public/bcl/webhook': typeof ApiPublicBclWebhookRoute
+  '/api/public/bookings/$reference': typeof ApiPublicBookingsReferenceRoute
   '/api/public/jobs/automation': typeof ApiPublicJobsAutomationRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/public/bookings/': typeof ApiPublicBookingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/api/public/jobs/automation'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/api/public/availability'
+    | '/api/public/bcl/webhook'
+    | '/api/public/bookings/$reference'
+    | '/api/public/jobs/automation'
+    | '/api/public/whatsapp/webhook'
+    | '/api/public/bookings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/api/public/jobs/automation'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/api/public/availability'
+    | '/api/public/bcl/webhook'
+    | '/api/public/bookings/$reference'
+    | '/api/public/jobs/automation'
+    | '/api/public/whatsapp/webhook'
+    | '/api/public/bookings'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
+    | '/api/public/availability'
+    | '/api/public/bcl/webhook'
+    | '/api/public/bookings/$reference'
     | '/api/public/jobs/automation'
+    | '/api/public/whatsapp/webhook'
+    | '/api/public/bookings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicAvailabilityRoute: typeof ApiPublicAvailabilityRoute
+  ApiPublicBclWebhookRoute: typeof ApiPublicBclWebhookRoute
+  ApiPublicBookingsReferenceRoute: typeof ApiPublicBookingsReferenceRoute
   ApiPublicJobsAutomationRoute: typeof ApiPublicJobsAutomationRoute
+  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
+  ApiPublicBookingsIndexRoute: typeof ApiPublicBookingsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -111,11 +186,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/availability': {
+      id: '/api/public/availability'
+      path: '/api/public/availability'
+      fullPath: '/api/public/availability'
+      preLoaderRoute: typeof ApiPublicAvailabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bcl/webhook': {
+      id: '/api/public/bcl/webhook'
+      path: '/api/public/bcl/webhook'
+      fullPath: '/api/public/bcl/webhook'
+      preLoaderRoute: typeof ApiPublicBclWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bookings/': {
+      id: '/api/public/bookings/'
+      path: '/api/public/bookings'
+      fullPath: '/api/public/bookings/'
+      preLoaderRoute: typeof ApiPublicBookingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bookings/$reference': {
+      id: '/api/public/bookings/$reference'
+      path: '/api/public/bookings/$reference'
+      fullPath: '/api/public/bookings/$reference'
+      preLoaderRoute: typeof ApiPublicBookingsReferenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/jobs/automation': {
       id: '/api/public/jobs/automation'
       path: '/api/public/jobs/automation'
       fullPath: '/api/public/jobs/automation'
       preLoaderRoute: typeof ApiPublicJobsAutomationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/whatsapp/webhook': {
+      id: '/api/public/whatsapp/webhook'
+      path: '/api/public/whatsapp/webhook'
+      fullPath: '/api/public/whatsapp/webhook'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -136,7 +246,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicAvailabilityRoute: ApiPublicAvailabilityRoute,
+  ApiPublicBclWebhookRoute: ApiPublicBclWebhookRoute,
+  ApiPublicBookingsReferenceRoute: ApiPublicBookingsReferenceRoute,
   ApiPublicJobsAutomationRoute: ApiPublicJobsAutomationRoute,
+  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
+  ApiPublicBookingsIndexRoute: ApiPublicBookingsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

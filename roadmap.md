@@ -1,11 +1,11 @@
 # Roadmap
-- [ ] Current request: verify all pages and dashboard as teachersha557@gmail.com; fix errors.
-- [ ] Current request: enable 10-minute payment checks and Tuesday 2 PM / Wednesday 10 AM MYT reminders (WhatsApp connection and approved templates required).
-- [ ] 1. Engine + database (bookings, capacity, holds)
-- [ ] 2. BCL payment links, webhook, API verification (needs BCL token + portal key)
-- [ ] 3. Google Calendar + Meet (needs Google connection)
-- [ ] 4. Confirmation email via Gmail (needs Gmail connection)
-- [ ] 5. WhatsApp reminders (needs WhatsApp connection + approved templates)
-- [ ] 6. Admin dashboard
-- [ ] 7. Update uploaded Netlify files (teacher-sha-speaking-club_1.zip) and hand back
-- [ ] 8. End-to-end tests
+- [x] 1. Engine + database (bookings, capacity, holds, overlap protection) — tested on PostgreSQL
+- [x] 2. BCL payment links, webhook, API verification, unmatched/late payment flagging — code done; needs BCL test-mode run
+- [x] 3. Google Calendar + Meet (one event + link per Tuesday, race-safe) — code done; needs Google connection
+- [x] 4. Confirmation email via Gmail (once, logged, retried) — code done; needs Google connection
+- [x] 5. WhatsApp reminders + delivery webhook + STOP opt-out — code done; OFF until WHATSAPP_LIVE=true
+- [x] 6. Admin dashboard (overview, classes, bookings, students, payments, WhatsApp, emails, setup, CSV)
+- [x] 7. Netlify hosting (netlify.toml, scheduled functions) + website connector script (public/tsc-booking.js)
+- [ ] 8. Connect accounts (Supabase, Google, BCL, Meta) — see DEPLOY-NETLIFY.md
+- [ ] 9. Add connector script to the public website + Booking Reference field in BCL form
+- [ ] 10. End-to-end tests in BCL test mode (DEPLOY-NETLIFY.md step 7), then go live
