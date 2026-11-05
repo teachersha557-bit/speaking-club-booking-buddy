@@ -1,4 +1,6 @@
 # Roadmap
+- [ ] Current request: verify all pages and dashboard as teachersha557@gmail.com; fix errors.
+- [ ] Current request: enable 10-minute payment checks and Tuesday 2 PM / Wednesday 10 AM MYT reminders (WhatsApp connection and approved templates required).
 - [ ] 1. Engine + database (bookings, capacity, holds)
 - [ ] 2. BCL payment links, webhook, API verification (needs BCL token + portal key)
 - [ ] 3. Google Calendar + Meet (needs Google connection)
